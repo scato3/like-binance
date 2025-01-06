@@ -68,8 +68,13 @@ export function OrderBook() {
     };
   }, [currentSymbol]);
 
-  const formatNumber = (value: string) => {
+  const formatNumber = (value: string, isAmount = false) => {
     const num = parseFloat(value);
+
+    if (isAmount && num >= 1000) {
+      return (num / 1000).toFixed(2) + "K";
+    }
+
     // 소수점이 있는 경우 모든 자릿수 표시
     if (num % 1 !== 0) {
       return num.toString();
@@ -117,9 +122,11 @@ export function OrderBook() {
                 />
                 <span className={styles.price}>{formatNumber(ask.price)}</span>
                 <span className={styles.amount}>
-                  {formatNumber(ask.amount)}
+                  {formatNumber(ask.amount, true)}
                 </span>
-                <span className={styles.total}>{formatNumber(ask.total)}</span>
+                <span className={styles.total}>
+                  {formatNumber(ask.total, true)}
+                </span>
               </div>
             ))}
           </div>
@@ -142,9 +149,11 @@ export function OrderBook() {
                 />
                 <span className={styles.price}>{formatNumber(bid.price)}</span>
                 <span className={styles.amount}>
-                  {formatNumber(bid.amount)}
+                  {formatNumber(bid.amount, true)}
                 </span>
-                <span className={styles.total}>{formatNumber(bid.total)}</span>
+                <span className={styles.total}>
+                  {formatNumber(bid.total, true)}
+                </span>
               </div>
             ))}
           </div>

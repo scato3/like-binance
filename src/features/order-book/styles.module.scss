@@ -49,6 +49,10 @@
   font-size: 12px;
   color: var(--text-secondary);
   border-bottom: 1px solid var(--border-color);
+
+  span {
+    text-align: center;
+  }
 }
 
 .row {
@@ -71,6 +75,7 @@
   span {
     position: relative;
     z-index: 1;
+    text-align: center;
   }
 
   &:hover {
@@ -98,7 +103,7 @@
 
 .amount,
 .total {
-  text-align: right;
+  // text-align: right; 제거
 }
 
 .currentPrice {
