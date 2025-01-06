@@ -1,0 +1,43 @@
+:root {
+  --background-rgb: 255, 255, 255;
+  --text-primary: #1e2329;
+  --text-secondary: #707a8a;
+  --border-color: #eaecef;
+  --primary-color: #f0b90b;
+  --up-color: #0ecb81;
+  --down-color: #f6465d;
+  --hover-background: #f5f5f5;
+}
+
+body {
+  color: var(--text-primary);
+  background: rgb(var(--background-rgb));
+}
+
+.trading-layout {
+  display: flex;
+  width: 100%;
+}
+
+.trading-main {
+  width: 85%;
+  border-right: 1px solid var(--border-color);
+}
+
+.trading-sidebar {
+  width: 15%;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+.trading-content {
+  display: flex;
+  height: calc(100vh - 120px); // navbar + header 높이 제외
+}
+
+.chart-area {
+  flex: 1;
+  padding: 16px;
+}

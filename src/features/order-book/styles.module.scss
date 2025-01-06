@@ -1,0 +1,122 @@
+.orderBook {
+  width: 300px;
+  border-right: 1px solid var(--border-color);
+  height: 100%;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  border-bottom: 1px solid var(--border-color);
+
+  h3 {
+    font-size: 16px;
+    font-weight: 500;
+    margin: 0;
+  }
+}
+
+.precision {
+  padding: 4px 8px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background: none;
+  font-size: 12px;
+  outline: none;
+  cursor: pointer;
+
+  &:hover {
+    border-color: var(--primary-color);
+  }
+}
+
+.content {
+  height: auto;
+}
+
+.orderList {
+  height: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.headers {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  padding: 8px 12px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  padding: 4px 12px;
+  font-size: 12px;
+  cursor: pointer;
+  position: relative;
+
+  .background {
+    position: absolute;
+    top: 0;
+    right: 0;
+    height: 100%;
+    z-index: 0;
+    transition: width 0.2s ease;
+  }
+
+  span {
+    position: relative;
+    z-index: 1;
+  }
+
+  &:hover {
+    background: var(--hover-background);
+  }
+}
+
+.asks .row {
+  .background {
+    background: rgba(246, 70, 93, 0.1);
+  }
+  .price {
+    color: var(--down-color);
+  }
+}
+
+.bids .row {
+  .background {
+    background: rgba(14, 203, 129, 0.1);
+  }
+  .price {
+    color: var(--up-color);
+  }
+}
+
+.amount,
+.total {
+  text-align: right;
+}
+
+.currentPrice {
+  padding: 12px;
+  text-align: center;
+  border-top: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border-color);
+  background: var(--hover-background);
+
+  .price {
+    display: block;
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--text-primary);
+  }
+
+  .change {
+    font-size: 12px;
+    color: var(--text-secondary);
+  }
+}

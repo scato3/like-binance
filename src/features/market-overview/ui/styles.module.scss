@@ -1,0 +1,59 @@
+.container {
+  flex: 1;
+  background: rgb(28, 32, 37);
+}
+
+.content {
+  display: flex;
+  height: 100%;
+}
+
+.leftContent {
+  flex: 1;
+  // 기존 스타일
+}
+
+.coinList {
+  width: 120px;
+  padding: 16px;
+  border-left: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.coinButton {
+  background: none;
+  border: none;
+  padding: 8px;
+  color: rgb(132, 142, 156);
+  font-size: 14px;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all 0.2s;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: white;
+  }
+
+  &.active {
+    background: rgba(240, 185, 11, 0.1);
+    color: rgb(240, 185, 11);
+  }
+}
+
+.pair {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+
+  .baseAsset {
+    font-weight: 500;
+  }
+
+  .separator,
+  .quoteAsset {
+    color: var(--text-secondary);
+  }
+}

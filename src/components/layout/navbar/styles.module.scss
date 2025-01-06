@@ -1,0 +1,118 @@
+.navbar {
+  background: rgb(22, 26, 30);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  height: 64px;
+}
+
+.content {
+  max-width: 1400px;
+  padding-left: 50px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.left {
+  display: flex;
+  align-items: center;
+  gap: 48px;
+}
+
+.logo {
+  font-size: 20px;
+  font-weight: 600;
+
+  a {
+    color: white;
+    text-decoration: none;
+  }
+}
+
+.menu {
+  display: flex;
+  gap: 32px;
+
+  a {
+    color: rgb(132, 142, 156);
+    text-decoration: none;
+    font-size: 14px;
+    padding: 8px 0;
+    position: relative;
+
+    &:hover {
+      color: white;
+    }
+
+    &.active {
+      color: white;
+
+      &::after {
+        content: "";
+        position: absolute;
+        bottom: -1px;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: rgb(240, 185, 11);
+      }
+    }
+  }
+}
+
+.coinInfo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: white;
+  font-family: monospace;
+}
+
+.pair {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 16px;
+  font-weight: 500;
+
+  .symbol {
+    color: white;
+  }
+
+  .separator {
+    color: rgb(132, 142, 156);
+  }
+
+  .quote {
+    color: rgb(132, 142, 156);
+  }
+}
+
+.priceInfo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.price {
+  font-family: monospace;
+  font-size: 14px;
+  color: white;
+}
+
+.change {
+  font-size: 12px;
+  padding: 2px 6px;
+  border-radius: 4px;
+
+  &.positive {
+    color: #0ecb81;
+    background: rgba(14, 203, 129, 0.1);
+  }
+
+  &.negative {
+    color: #f6465d;
+    background: rgba(246, 70, 93, 0.1);
+  }
+}
