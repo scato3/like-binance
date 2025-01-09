@@ -89,3 +89,25 @@ export type WebSocketMessage = WebSocketTradeEvent | WebSocket24hrEvent;
 export interface WebSocketMessageHandler {
   (message: WebSocketMessage): void;
 }
+
+export interface KlineData {
+  e: "kline";
+  s: string;
+  k: {
+    t: number;
+    o: string;
+    h: string;
+    l: string;
+    c: string;
+    v: string;
+  };
+}
+
+export interface DepthData {
+  e: "depthUpdate";
+  s: string;
+  asks: [string, string][];
+  bids: [string, string][];
+}
+
+export type WebSocketSubscriber<T> = (data: T) => void;

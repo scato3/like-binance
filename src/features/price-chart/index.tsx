@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import * as d3 from "d3";
 import { useCryptoStore } from "@/entities/crypto/model/store";
 import styles from "./styles.module.scss";
+import { binanceWS } from "@/shared/api/binance";
 
 const INTERVALS = {
   "1s": "1s",
@@ -41,6 +42,7 @@ export function PriceChart() {
 
   useEffect(() => {
     if (!svgRef.current || !tooltipRef.current) return;
+    if (data.length === 0) return;
 
     const margin = {
       top: 20,
@@ -60,8 +62,6 @@ export function PriceChart() {
       .append("g")
       .attr("transform", `translate(${margin.left},${margin.top})`);
 
-    if (data.length === 0) return;
-
     const xScale = d3
       .scaleTime()
       .domain(d3.extent(data, (d) => d.time) as [Date, Date])
@@ -80,6 +80,21 @@ export function PriceChart() {
       .domain([0, d3.max(data, (d) => d.volume) as number])
       .range([volumeHeight, 0]);
 
+    const volumeYAxis = d3
+      .axisRight(volumeScale)
+      .tickFormat((d) => {
+        const volume = d as number;
+        if (volume >= 1000000) {
+          return `${(volume / 1000000).toFixed(1)}M`;
+        }
+        if (volume >= 1000) {
+          return `${(volume / 1000).toFixed(1)}K`;
+        }
+        return volume.toFixed(1);
+      })
+      .tickSize(0)
+      .ticks(3);
+
     const xAxis = d3.axisBottom(xScale).ticks(width > 800 ? 10 : 5);
 
     const yAxis = d3
@@ -87,26 +102,6 @@ export function PriceChart() {
       .tickFormat((d) => d.toLocaleString())
       .tickSize(0)
       .ticks(6);
-
-    g.append("g")
-      .attr("class", "x-axis")
-      .attr("transform", `translate(0,${priceHeight})`)
-      .call(xAxis);
-
-    const yAxisG = g
-      .append("g")
-      .attr("class", "y-axis")
-      .attr("transform", `translate(${width},0)`)
-      .call(yAxis);
-
-    yAxisG
-      .selectAll(".tick text")
-      .attr("x", 6)
-      .attr("dy", 4)
-      .style("fill", "#76808f")
-      .style("font-size", "11px");
-
-    yAxisG.select(".domain").remove();
 
     g.append("g")
       .attr("class", "grid")
@@ -121,44 +116,35 @@ export function PriceChart() {
       .attr("stroke", "#f0f3fa")
       .attr("stroke-opacity", 0.1);
 
+    g.append("g")
+      .attr("class", "volume-grid")
+      .attr("transform", `translate(0,${priceHeight + 20})`)
+      .selectAll("line")
+      .data(volumeScale.ticks(3))
+      .enter()
+      .append("line")
+      .attr("x1", 0)
+      .attr("x2", width)
+      .attr("y1", (d) => volumeScale(d))
+      .attr("y2", (d) => volumeScale(d))
+      .attr("stroke", "#f0f3fa")
+      .attr("stroke-opacity", 0.1);
+
     const volumeG = g
       .append("g")
       .attr("transform", `translate(0,${priceHeight + 20})`);
 
-    const volumeBars = volumeG
+    volumeG
       .selectAll(".volume-bar")
       .data(data)
       .enter()
-      .append("g")
-      .attr("class", "volume-bar");
-
-    volumeBars
       .append("rect")
+      .attr("class", "volume-bar")
       .attr("x", (d) => xScale(d.time) - (width / data.length) * 0.4)
       .attr("y", (d) => volumeScale(d.volume))
       .attr("width", (width / data.length) * 0.8)
       .attr("height", (d) => volumeHeight - volumeScale(d.volume))
       .attr("fill", (d) => (d.open > d.close ? "#f6465d33" : "#0ecb8133"));
-
-    const volumeLabel = g
-      .append("g")
-      .attr("class", "volume-label")
-      .style("display", "none")
-      .style("z-index", 1);
-
-    volumeLabel
-      .append("rect")
-      .attr("x", width + 2)
-      .attr("width", 65)
-      .attr("height", 20)
-      .attr("fill", "#f6465d");
-
-    const volumeLabelText = volumeLabel
-      .append("text")
-      .attr("x", width + 33)
-      .attr("dy", 14)
-      .attr("text-anchor", "middle")
-      .attr("fill", "#ffffff");
 
     g.selectAll(".candle")
       .data(data)
@@ -202,6 +188,60 @@ export function PriceChart() {
       .attr("x1", 0)
       .attr("x2", width)
       .style("display", "none");
+
+    g.append("g")
+      .attr("class", "x-axis")
+      .attr("transform", `translate(0,${priceHeight})`)
+      .call(xAxis);
+
+    const yAxisG = g
+      .append("g")
+      .attr("class", "y-axis")
+      .attr("transform", `translate(${width},0)`)
+      .call(yAxis);
+
+    yAxisG
+      .selectAll(".tick text")
+      .attr("x", 6)
+      .attr("dy", 4)
+      .style("fill", "#76808f")
+      .style("font-size", "11px");
+
+    yAxisG.select(".domain").remove();
+
+    const volumeYAxisG = g
+      .append("g")
+      .attr("class", "volume-y-axis")
+      .attr("transform", `translate(${width},${priceHeight + 20})`)
+      .call(volumeYAxis);
+
+    volumeYAxisG
+      .selectAll(".tick text")
+      .attr("x", 6)
+      .attr("dy", 4)
+      .style("fill", "#76808f")
+      .style("font-size", "11px");
+
+    volumeYAxisG.select(".domain").remove();
+
+    const volumeLabel = g
+      .append("g")
+      .attr("class", "volume-label")
+      .style("display", "none");
+
+    volumeLabel
+      .append("rect")
+      .attr("x", width + 2)
+      .attr("width", 65)
+      .attr("height", 20)
+      .attr("fill", "#f6465d");
+
+    const volumeLabelText = volumeLabel
+      .append("text")
+      .attr("x", width + 33)
+      .attr("dy", 14)
+      .attr("text-anchor", "middle")
+      .attr("fill", "#ffffff");
 
     const priceLabel = g
       .append("g")
@@ -280,51 +320,6 @@ export function PriceChart() {
         priceLabel.style("display", "none");
         volumeLabel.style("display", "none");
       });
-
-    const volumeYAxis = d3
-      .axisRight(volumeScale)
-      .tickFormat((d) => {
-        const volume = d as number;
-        if (volume >= 1000000) {
-          return `${(volume / 1000000).toFixed(1)}M`;
-        }
-        if (volume >= 1000) {
-          return `${(volume / 1000).toFixed(1)}K`;
-        }
-        return volume.toFixed(1);
-      })
-      .tickSize(0)
-      .ticks(3);
-
-    const volumeYAxisG = g
-      .append("g")
-      .attr("class", "volume-y-axis")
-      .attr("transform", `translate(${width},${priceHeight + 20})`)
-      .style("z-index", 1)
-      .call(volumeYAxis);
-
-    volumeYAxisG
-      .selectAll(".tick text")
-      .attr("x", 6)
-      .attr("dy", 4)
-      .style("fill", "#76808f")
-      .style("font-size", "11px");
-
-    volumeYAxisG.select(".domain").remove();
-
-    g.append("g")
-      .attr("class", "volume-grid")
-      .attr("transform", `translate(0,${priceHeight + 20})`)
-      .selectAll("line")
-      .data(volumeScale.ticks(3))
-      .enter()
-      .append("line")
-      .attr("x1", 0)
-      .attr("x2", width)
-      .attr("y1", (d) => volumeScale(d))
-      .attr("y2", (d) => volumeScale(d))
-      .attr("stroke", "#f0f3fa")
-      .attr("stroke-opacity", 0.1);
   }, [data]);
 
   useEffect(() => {
@@ -346,14 +341,13 @@ export function PriceChart() {
         setData(candleData);
       });
 
-    const ws = new WebSocket(
-      `wss://stream.binance.com:9443/ws/${formattedSymbol}@kline_${interval}`
-    );
-
-    ws.onmessage = (event) => {
-      const message = JSON.parse(event.data);
-      if (message.k) {
-        const { t, o, h, l, c, v } = message.k;
+    const unsubscribe = binanceWS.subscribeKline(
+      currentSymbol,
+      interval,
+      (message) => {
+        const {
+          k: { t, o, h, l, c, v },
+        } = message;
         setData((prev) => {
           const newData = [...prev];
           const lastCandle = {
@@ -378,9 +372,9 @@ export function PriceChart() {
           return newData;
         });
       }
-    };
+    );
 
-    return () => ws.close();
+    return () => unsubscribe();
   }, [currentSymbol, interval]);
 
   return (

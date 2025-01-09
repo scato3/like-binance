@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useCryptoStore } from "@/entities/crypto/model/store";
-import type { WebSocketMessage } from "@/shared/api/types/binance";
+import { binanceWS } from "@/shared/api/binance";
 
 export function useMarketData(symbol: string) {
   const store = useCryptoStore();
@@ -8,16 +8,7 @@ export function useMarketData(symbol: string) {
   useEffect(() => {
     if (typeof window === "undefined") return;
 
-    // 심볼에서 '/' 제거하여 바이낸스 API 형식으로 변환
-    const formattedSymbol = symbol.replace("/", "").toLowerCase();
-
-    const ws = new WebSocket(
-      `wss://stream.binance.com:9443/ws/${formattedSymbol}@trade/${formattedSymbol}@ticker`
-    );
-
-    ws.onmessage = (event) => {
-      const data = JSON.parse(event.data) as WebSocketMessage;
-
+    const unsubscribe = binanceWS.subscribeMarketData(symbol, (data) => {
       switch (data.e) {
         case "trade":
           store.updateMarketPrice({ symbol, price: data.p });
@@ -32,11 +23,9 @@ export function useMarketData(symbol: string) {
           });
           break;
       }
-    };
+    });
 
-    return () => {
-      ws.close();
-    };
+    return () => unsubscribe();
   }, [symbol, store]);
 
   return null;

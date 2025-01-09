@@ -1,80 +1,68 @@
-import type { WebSocketMessage } from "./types/binance";
+import type {
+  WebSocketMessage,
+  KlineData,
+  DepthData,
+  WebSocketSubscriber,
+} from "./types/binance";
 
-export class BinanceAPI {
-  private static baseURL = "https://api.binance.com/api/v3";
-  private static wsURL = "wss://stream.binance.com:9443/ws";
+class BinanceWebSocket {
+  private static instance: BinanceWebSocket;
 
-  static async getSymbolPrice(symbol: string) {
-    try {
-      const response = await fetch(
-        `${this.baseURL}/ticker/price?symbol=${symbol}`,
-        {
-          headers: {
-            Accept: "application/json",
-          },
-        }
-      );
-      if (!response.ok) throw new Error("Failed to fetch price");
-      return response.json();
-    } catch (error) {
-      console.error("Error fetching price:", error);
-      throw error;
+  static getInstance(): BinanceWebSocket {
+    if (!BinanceWebSocket.instance) {
+      BinanceWebSocket.instance = new BinanceWebSocket();
     }
+    return BinanceWebSocket.instance;
   }
 
-  static async get24hrStats(symbol: string) {
-    try {
-      const response = await fetch(
-        `${this.baseURL}/ticker/24hr?symbol=${symbol}`,
-        {
-          headers: {
-            Accept: "application/json",
-          },
-        }
-      );
-      if (!response.ok) throw new Error("Failed to fetch 24hr stats");
-      return response.json();
-    } catch (error) {
-      console.error("Error fetching 24hr stats:", error);
-      throw error;
-    }
+  subscribeMarketData(
+    symbol: string,
+    callback: WebSocketSubscriber<WebSocketMessage>
+  ) {
+    const formattedSymbol = symbol.replace("/", "").toLowerCase();
+    const ws = new WebSocket(
+      `wss://stream.binance.com:9443/ws/${formattedSymbol}@trade/${formattedSymbol}@ticker`
+    );
+
+    ws.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      callback(data);
+    };
+
+    return () => ws.close();
   }
 
-  static createWebSocket(
-    streams: string[],
-    messageHandler: (data: WebSocketMessage) => void
-  ): WebSocket {
-    const ws = new WebSocket(this.wsURL);
+  subscribeOrderBook(symbol: string, callback: WebSocketSubscriber<DepthData>) {
+    const formattedSymbol = symbol.replace("/", "").toLowerCase();
+    const ws = new WebSocket(
+      `wss://stream.binance.com:9443/ws/${formattedSymbol}@depth20@100ms`
+    );
 
-    ws.onopen = () => {
-      console.log("WebSocket connected");
-      ws.send(
-        JSON.stringify({
-          method: "SUBSCRIBE",
-          params: streams,
-          id: 1,
-        })
-      );
+    ws.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      callback(data);
     };
 
-    ws.onmessage = (event: MessageEvent) => {
-      try {
-        const data = JSON.parse(event.data as string);
-        if (!data.e) return;
-        messageHandler(data as WebSocketMessage);
-      } catch (error) {
-        console.error("WebSocket message error:", error);
-      }
+    return () => ws.close();
+  }
+
+  subscribeKline(
+    symbol: string,
+    interval: string,
+    callback: WebSocketSubscriber<KlineData>
+  ) {
+    const formattedSymbol = symbol.replace("/", "").toLowerCase();
+    const ws = new WebSocket(
+      `wss://stream.binance.com:9443/ws/${formattedSymbol}@kline_${interval}`
+    );
+
+    ws.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      callback(data);
     };
 
-    ws.onerror = (error: Event) => {
-      console.error("WebSocket error:", error);
-    };
-
-    ws.onclose = () => {
-      console.log("WebSocket connection closed");
-    };
-
-    return ws;
+    return () => ws.close();
   }
 }
+
+export const binanceWS = BinanceWebSocket.getInstance();

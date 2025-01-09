@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef } from "react";
 import { useCryptoStore } from "@/entities/crypto/model/store";
 import styles from "./styles.module.scss";
+import { binanceWS } from "@/shared/api/binance";
 
 interface OrderBookItem {
   price: string;
@@ -23,10 +24,12 @@ export function OrderBook() {
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
-    const formattedSymbol = currentSymbol.replace("/", "").toLowerCase();
-    const ws = new WebSocket(
-      `wss://stream.binance.com:9443/ws/${formattedSymbol}@depth20@100ms`
-    );
+    const unsubscribe = binanceWS.subscribeOrderBook(currentSymbol, (data) => {
+      bufferRef.current = {
+        asks: data.asks,
+        bids: data.bids,
+      };
+    });
 
     const processOrders = (orders: string[][]): OrderBookItem[] => {
       let total = 0;
@@ -49,19 +52,11 @@ export function OrderBook() {
       }
     };
 
-    ws.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      bufferRef.current = {
-        asks: data.asks,
-        bids: data.bids,
-      };
-    };
-
     // 1초마다 UI 업데이트
     timerRef.current = setInterval(updateOrderBook, 1000);
 
     return () => {
-      ws.close();
+      unsubscribe();
       if (timerRef.current) {
         clearInterval(timerRef.current);
       }
