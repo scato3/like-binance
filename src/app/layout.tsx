@@ -4,6 +4,7 @@ import { TradingHeader } from "@/components/layout/trading-header";
 import "./globals.scss";
 import localFont from "next/font/local";
 import { OrderBook } from "@/features/order-book";
+import { MarketOverview } from "@/features/market-overview";
 
 const pretendard = localFont({
   src: "../../public/fonts/PretendardVariable.woff2",
@@ -30,7 +31,9 @@ export default function RootLayout({
             <TradingHeader />
             <div className="trading-content">
               <OrderBook />
-              <div className="chart-area">{/* 차트는 나중에 구현 */}</div>
+              <div className="chart-area">
+                <MarketOverview />
+              </div>
             </div>
           </div>
           <div className="trading-sidebar">{children}</div>

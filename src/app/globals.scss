@@ -39,5 +39,6 @@ body {
 
 .chart-area {
   flex: 1;
-  padding: 16px;
+  height: 100%;
+  min-width: 0; // flexbox 오버플로우 방지
 }

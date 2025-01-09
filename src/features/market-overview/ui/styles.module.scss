@@ -1,25 +1,28 @@
 .container {
-  flex: 1;
-  background: rgb(28, 32, 37);
+  width: 100%;
+  height: 100%;
+  padding: 16px;
 }
 
 .content {
   display: flex;
+  gap: 16px;
   height: 100%;
 }
 
 .leftContent {
   flex: 1;
-  // 기존 스타일
+  min-width: 0;
+  height: 100%;
 }
 
 .coinList {
-  width: 120px;
-  padding: 16px;
-  border-left: 1px solid rgba(255, 255, 255, 0.1);
+  width: 200px;
   display: flex;
   flex-direction: column;
   gap: 8px;
+  padding: 16px;
+  border-left: 1px solid var(--border-color);
 }
 
 .coinButton {
