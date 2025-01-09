@@ -5,6 +5,8 @@ import type {
   WebSocketSubscriber,
 } from "./types/binance";
 
+const BINANCE_WS_URL = "wss://stream.binance.com:9443/ws";
+
 class BinanceWebSocket {
   private static instance: BinanceWebSocket;
 
@@ -21,7 +23,7 @@ class BinanceWebSocket {
   ) {
     const formattedSymbol = symbol.replace("/", "").toLowerCase();
     const ws = new WebSocket(
-      `wss://stream.binance.com:9443/ws/${formattedSymbol}@trade/${formattedSymbol}@ticker`
+      `${BINANCE_WS_URL}/${formattedSymbol}@trade/${formattedSymbol}@ticker`
     );
 
     ws.onmessage = (event) => {
@@ -35,7 +37,7 @@ class BinanceWebSocket {
   subscribeOrderBook(symbol: string, callback: WebSocketSubscriber<DepthData>) {
     const formattedSymbol = symbol.replace("/", "").toLowerCase();
     const ws = new WebSocket(
-      `wss://stream.binance.com:9443/ws/${formattedSymbol}@depth20@100ms`
+      `${BINANCE_WS_URL}/${formattedSymbol}@depth20@100ms`
     );
 
     ws.onmessage = (event) => {
@@ -53,7 +55,7 @@ class BinanceWebSocket {
   ) {
     const formattedSymbol = symbol.replace("/", "").toLowerCase();
     const ws = new WebSocket(
-      `wss://stream.binance.com:9443/ws/${formattedSymbol}@kline_${interval}`
+      `${BINANCE_WS_URL}/${formattedSymbol}@kline_${interval}`
     );
 
     ws.onmessage = (event) => {
