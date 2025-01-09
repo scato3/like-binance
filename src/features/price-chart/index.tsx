@@ -103,7 +103,8 @@ export function PriceChart() {
       .selectAll(".tick text")
       .attr("x", 6)
       .attr("dy", 4)
-      .style("fill", "#1e2329");
+      .style("fill", "#76808f")
+      .style("font-size", "11px");
 
     yAxisG.select(".domain").remove();
 
@@ -117,23 +118,47 @@ export function PriceChart() {
       .attr("x2", width)
       .attr("y1", (d) => yScale(d))
       .attr("y2", (d) => yScale(d))
-      .attr("stroke", "rgba(255, 255, 255, 0.05)");
+      .attr("stroke", "#f0f3fa")
+      .attr("stroke-opacity", 0.1);
 
     const volumeG = g
       .append("g")
       .attr("transform", `translate(0,${priceHeight + 20})`);
 
-    volumeG
+    const volumeBars = volumeG
       .selectAll(".volume-bar")
       .data(data)
       .enter()
+      .append("g")
+      .attr("class", "volume-bar");
+
+    volumeBars
       .append("rect")
-      .attr("class", "volume-bar")
       .attr("x", (d) => xScale(d.time) - (width / data.length) * 0.4)
       .attr("y", (d) => volumeScale(d.volume))
       .attr("width", (width / data.length) * 0.8)
       .attr("height", (d) => volumeHeight - volumeScale(d.volume))
       .attr("fill", (d) => (d.open > d.close ? "#f6465d33" : "#0ecb8133"));
+
+    const volumeLabel = g
+      .append("g")
+      .attr("class", "volume-label")
+      .style("display", "none")
+      .style("z-index", 1);
+
+    volumeLabel
+      .append("rect")
+      .attr("x", width + 2)
+      .attr("width", 65)
+      .attr("height", 20)
+      .attr("fill", "#f6465d");
+
+    const volumeLabelText = volumeLabel
+      .append("text")
+      .attr("x", width + 33)
+      .attr("dy", 14)
+      .attr("text-anchor", "middle")
+      .attr("fill", "#ffffff");
 
     g.selectAll(".candle")
       .data(data)
@@ -207,10 +232,13 @@ export function PriceChart() {
           crosshairX.style("display", "none");
           crosshairY.style("display", "none");
           priceLabel.style("display", "none");
+          volumeLabel.style("display", "none");
           return;
         }
 
         const price = yScale.invert(y);
+        const volume: number | null =
+          y > priceHeight ? +volumeScale.invert(y - priceHeight - 20) : null;
 
         crosshairX
           .attr("x1", x)
@@ -224,17 +252,79 @@ export function PriceChart() {
           .style("display", null)
           .attr("stroke", "rgba(255, 255, 255, 0.2)");
 
-        priceLabel
-          .attr("transform", `translate(0,${y - 10})`)
-          .style("display", null);
-
-        priceLabelText.text(price.toFixed(2));
+        if (y <= priceHeight) {
+          priceLabel
+            .attr("transform", `translate(0,${y - 10})`)
+            .style("display", null);
+          volumeLabel.style("display", "none");
+          priceLabelText.text(price.toFixed(2));
+        } else {
+          volumeLabel
+            .attr("transform", `translate(0,${y - 10})`)
+            .style("display", null);
+          priceLabel.style("display", "none");
+          volumeLabelText.text(
+            volume !== null
+              ? volume >= 1000000
+                ? (volume / 1000000).toFixed(2) + "M"
+                : volume >= 1000
+                ? (volume / 1000).toFixed(2) + "K"
+                : volume.toFixed(2)
+              : "0"
+          );
+        }
       })
       .on("mouseleave", function () {
         crosshairX.style("display", "none");
         crosshairY.style("display", "none");
         priceLabel.style("display", "none");
+        volumeLabel.style("display", "none");
       });
+
+    const volumeYAxis = d3
+      .axisRight(volumeScale)
+      .tickFormat((d) => {
+        const volume = d as number;
+        if (volume >= 1000000) {
+          return `${(volume / 1000000).toFixed(1)}M`;
+        }
+        if (volume >= 1000) {
+          return `${(volume / 1000).toFixed(1)}K`;
+        }
+        return volume.toFixed(1);
+      })
+      .tickSize(0)
+      .ticks(3);
+
+    const volumeYAxisG = g
+      .append("g")
+      .attr("class", "volume-y-axis")
+      .attr("transform", `translate(${width},${priceHeight + 20})`)
+      .style("z-index", 1)
+      .call(volumeYAxis);
+
+    volumeYAxisG
+      .selectAll(".tick text")
+      .attr("x", 6)
+      .attr("dy", 4)
+      .style("fill", "#76808f")
+      .style("font-size", "11px");
+
+    volumeYAxisG.select(".domain").remove();
+
+    g.append("g")
+      .attr("class", "volume-grid")
+      .attr("transform", `translate(0,${priceHeight + 20})`)
+      .selectAll("line")
+      .data(volumeScale.ticks(3))
+      .enter()
+      .append("line")
+      .attr("x1", 0)
+      .attr("x2", width)
+      .attr("y1", (d) => volumeScale(d))
+      .attr("y2", (d) => volumeScale(d))
+      .attr("stroke", "#f0f3fa")
+      .attr("stroke-opacity", 0.1);
   }, [data]);
 
   useEffect(() => {
