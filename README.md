@@ -12,13 +12,20 @@
 - 거래량 차트 연동
 - 다양한 시간 간격 지원 (1s, 15m, 1h, 4h, 1d, 1w)
 
-### 2. 실시간 시세 정보
+### 2. 실시간 호가창 (Order Book)
+
+- 실시간 매수/매도 호가 업데이트
+- 주문량 시각화
+- 1초 간격 UI 업데이트
+- 가격별 누적 수량 표시
+
+### 3. 실시간 시세 정보
 
 - 24시간 고가/저가
 - 거래량 정보
 - 가격 변동률
 
-### 3. 심볼 관리
+### 4. 심볼 관리
 
 - USDT/BTC/BNB 마켓 지원
 - 실시간 가격 업데이트
@@ -36,64 +43,114 @@
 
 ### 데이터 통신
 
-- **REST API**: 바이낸스 Public API
 - **WebSocket**: 바이낸스 WebSocket API
-  - 캔들스틱 데이터 (`@kline`)
+  - 캔들스틱 데이터 (`@kline_<interval>`)
   - 거래 데이터 (`@trade`)
   - 24시간 통계 (`@ticker`)
-
-## 프로젝트 구조
-
-```
-src/
-├── app/                 # Next.js 앱 라우터
-├── components/          # 공통 컴포넌트
-├── entities/           # 도메인 엔티티
-├── features/           # 기능 단위 모듈
-├── shared/             # 공통 유틸리티
-└── widgets/            # 위젯 컴포넌트
-```
+  - 호가창 데이터 (`@depth20@100ms`)
 
 ## 주요 구현 사항
 
-### 1. D3.js 차트 구현
+### 1. WebSocket 데이터 처리
 
 ```typescript
-export function PriceChart() {
-  // 캔들스틱 차트 구현
-  const yScale = d3
-    .scaleLinear()
-    .domain([
-      (d3.min(data, (d) => d.low) as number) * 0.999,
-      (d3.max(data, (d) => d.high) as number) * 1.001,
-    ])
-    .range([priceHeight, 0]);
+class BinanceWebSocket {
+  private static instance: BinanceWebSocket;
 
-  // 실시간 가격 라벨
-  const priceLabel = g
-    .append("g")
-    .attr("class", "price-label")
-    .style("display", "none");
+  // 시세 및 거래 데이터
+  subscribeMarketData(
+    symbol: string,
+    callback: WebSocketSubscriber<WebSocketMessage>
+  ) {
+    const formattedSymbol = symbol.replace("/", "").toLowerCase();
+    const ws = new WebSocket(
+      `${BINANCE_WS_URL}/${formattedSymbol}@trade/${formattedSymbol}@ticker`
+    );
+    // ...
+  }
+
+  // 호가창 데이터
+  subscribeOrderBook(symbol: string, callback: WebSocketSubscriber<DepthData>) {
+    const formattedSymbol = symbol.replace("/", "").toLowerCase();
+    const ws = new WebSocket(
+      `${BINANCE_WS_URL}/${formattedSymbol}@depth20@100ms`
+    );
+    // ...
+  }
+
+  // 캔들스틱 차트 데이터
+  subscribeKline(
+    symbol: string,
+    interval: string,
+    callback: WebSocketSubscriber<KlineData>
+  ) {
+    const formattedSymbol = symbol.replace("/", "").toLowerCase();
+    const ws = new WebSocket(
+      `${BINANCE_WS_URL}/${formattedSymbol}@kline_${interval}`
+    );
+    // ...
+  }
 }
 ```
 
-### 2. WebSocket 데이터 처리
+### 2. 실시간 데이터 활용
 
 ```typescript
+// 시세 정보 업데이트
 export function useMarketData(symbol: string) {
   useEffect(() => {
-    const formattedSymbol = symbol.replace("/", "").toLowerCase();
-    const ws = new WebSocket(
-      `wss://stream.binance.com:9443/ws/${formattedSymbol}@trade/${formattedSymbol}@ticker`
-    );
-
-    ws.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      // 실시간 데이터 처리
-    };
-
-    return () => ws.close();
+    const unsubscribe = binanceWS.subscribeMarketData(symbol, (data) => {
+      switch (data.e) {
+        case "trade":
+          store.updateMarketPrice({ symbol, price: data.p });
+          break;
+        case "24hrTicker":
+          store.updateMarketStats(symbol, {
+            high24h: data.h,
+            low24h: data.l,
+            volume24h: data.v,
+            volumeUsdt24h: data.q,
+            priceChangePercent: data.P,
+          });
+          break;
+      }
+    });
+    return () => unsubscribe();
   }, [symbol]);
+}
+
+// 호가창 업데이트
+export function OrderBook() {
+  useEffect(() => {
+    const unsubscribe = binanceWS.subscribeOrderBook(currentSymbol, (data) => {
+      bufferRef.current = {
+        asks: data.asks,
+        bids: data.bids,
+      };
+    });
+    // 1초마다 UI 업데이트
+    timerRef.current = setInterval(updateOrderBook, 1000);
+    return () => unsubscribe();
+  }, [currentSymbol]);
+}
+
+// 차트 데이터 업데이트
+export function PriceChart() {
+  useEffect(() => {
+    const unsubscribe = binanceWS.subscribeKline(
+      currentSymbol,
+      interval,
+      (message) => {
+        const {
+          k: { t, o, h, l, c, v },
+        } = message;
+        setData((prev) => {
+          // 캔들스틱 데이터 업데이트 로직
+        });
+      }
+    );
+    return () => unsubscribe();
+  }, [currentSymbol, interval]);
 }
 ```
 
