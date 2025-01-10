@@ -2,6 +2,36 @@
 
 바이낸스 API를 활용한 실시간 암호화폐 거래소 대시보드입니다. WebSocket을 통한 실시간 데이터 처리와 D3.js를 활용한 차트 시각화를 제공합니다.
 
+## 디렉토리 구조
+
+```
+src/
+├── app/                    # Next.js 앱 라우터
+├── entities/              # 도메인 엔티티
+│   └── crypto/
+│       └── model/
+│           └── store.ts   # Zustand 상태 관리
+├── features/             # 주요 기능 구현
+│   ├── market-overview/  # 시세 정보
+│   ├── order-book/      # 호가창
+│   └── price-chart/     # 차트
+├── shared/              # 공유 유틸리티
+│   ├── api/            # API 관련 코드
+│   │   ├── binance.ts  # WebSocket 구현
+│   │   └── types/      # 타입 정의
+│   ├── config/        # 설정
+│   └── data/          # 정적 데이터
+└── widgets/           # 복합 컴포넌트
+    └── crypto-dashboard/  # 대시보드 레이아웃
+```
+
+이 구조는 Feature-Sliced Design 패턴을 따르고 있으며, 각 계층이 명확한 책임을 가지고 있습니다:
+
+- `entities/`: 도메인 모델과 상태 관리
+- `features/`: 핵심 기능 구현
+- `shared/`: 재사용 가능한 유틸리티
+- `widgets/`: 여러 기능을 조합한 복합 컴포넌트
+
 ## 주요 기능
 
 ### 1. 실시간 캔들스틱 차트
@@ -48,36 +78,6 @@
   - 거래 데이터 (`@trade`)
   - 24시간 통계 (`@ticker`)
   - 호가창 데이터 (`@depth20@100ms`)
-
-## 디렉토리 구조
-
-```
-src/
-├── app/                    # Next.js 앱 라우터
-├── entities/              # 도메인 엔티티
-│   └── crypto/
-│       └── model/
-│           └── store.ts   # Zustand 상태 관리
-├── features/             # 주요 기능 구현
-│   ├── market-overview/  # 시세 정보
-│   ├── order-book/      # 호가창
-│   └── price-chart/     # 차트
-├── shared/              # 공유 유틸리티
-│   ├── api/            # API 관련 코드
-│   │   ├── binance.ts  # WebSocket 구현
-│   │   └── types/      # 타입 정의
-│   ├── config/        # 설정
-│   └── data/          # 정적 데이터
-└── widgets/           # 복합 컴포넌트
-    └── crypto-dashboard/  # 대시보드 레이아웃
-```
-
-이 구조는 Feature-Sliced Design 패턴을 따르고 있으며, 각 계층이 명확한 책임을 가지고 있습니다:
-
-- `entities/`: 도메인 모델과 상태 관리
-- `features/`: 핵심 기능 구현
-- `shared/`: 재사용 가능한 유틸리티
-- `widgets/`: 여러 기능을 조합한 복합 컴포넌트
 
 ## 주요 구현 사항
 
