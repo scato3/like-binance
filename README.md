@@ -49,6 +49,36 @@
   - 24시간 통계 (`@ticker`)
   - 호가창 데이터 (`@depth20@100ms`)
 
+## 디렉토리 구조
+
+```
+src/
+├── app/                    # Next.js 앱 라우터
+├── entities/              # 도메인 엔티티
+│   └── crypto/
+│       └── model/
+│           └── store.ts   # Zustand 상태 관리
+├── features/             # 주요 기능 구현
+│   ├── market-overview/  # 시세 정보
+│   ├── order-book/      # 호가창
+│   └── price-chart/     # 차트
+├── shared/              # 공유 유틸리티
+│   ├── api/            # API 관련 코드
+│   │   ├── binance.ts  # WebSocket 구현
+│   │   └── types/      # 타입 정의
+│   ├── config/        # 설정
+│   └── data/          # 정적 데이터
+└── widgets/           # 복합 컴포넌트
+    └── crypto-dashboard/  # 대시보드 레이아웃
+```
+
+이 구조는 Feature-Sliced Design 패턴을 따르고 있으며, 각 계층이 명확한 책임을 가지고 있습니다:
+
+- `entities/`: 도메인 모델과 상태 관리
+- `features/`: 핵심 기능 구현
+- `shared/`: 재사용 가능한 유틸리티
+- `widgets/`: 여러 기능을 조합한 복합 컴포넌트
+
 ## 주요 구현 사항
 
 ### 1. WebSocket 데이터 처리
