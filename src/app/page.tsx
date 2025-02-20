@@ -1,12 +1,12 @@
 "use client";
 
-import { CryptoDashboard } from "@/widgets/crypto-dashboard";
+import { CoinList } from "@/features/coin-list";
 import styles from "./page.module.scss";
 
 export default function Home() {
   return (
     <div className={styles.container}>
-      <CryptoDashboard />
+      <CoinList />
     </div>
   );
 }

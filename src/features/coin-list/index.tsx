@@ -8,7 +8,7 @@ import styles from "./styles.module.scss";
 
 type QuoteAsset = "USDT" | "BTC" | "BNB";
 
-export function CryptoDashboard() {
+export function CoinList() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedQuote, setSelectedQuote] = useState<QuoteAsset>("USDT");
   const currentSymbol = useCryptoStore((state) => state.currentSymbol);

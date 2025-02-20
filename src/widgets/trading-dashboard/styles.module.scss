@@ -1,0 +1,18 @@
+.layout {
+  width: 85%;
+  border-right: 1px solid var(--border-color);
+}
+
+.main {
+  width: 100%;
+}
+
+.content {
+  display: flex;
+  height: calc(100vh - 120px);
+}
+
+.chartArea {
+  flex: 1;
+  height: 100%;
+}
