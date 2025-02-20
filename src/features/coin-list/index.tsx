@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useCryptoStore } from "@/entities/crypto/model/store";
-import { COINS } from "@/shared/data/coins";
+import { COINS } from "@/entities/crypto/data/coins";
 import { useMarketData } from "@/features/market-overview/model/use-market-data";
 import styles from "./styles.module.scss";
 

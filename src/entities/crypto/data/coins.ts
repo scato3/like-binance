@@ -1,8 +1,4 @@
-export interface Coin {
-  symbol: string;
-  baseAsset: string;
-  quoteAsset: string;
-}
+import type { Coin } from "../model/types";
 
 export const COINS: Coin[] = [
   // USDT 마켓
@@ -48,12 +44,4 @@ export const COINS: Coin[] = [
   { symbol: "ADA/BNB", baseAsset: "ADA", quoteAsset: "BNB" },
   { symbol: "DOGE/BNB", baseAsset: "DOGE", quoteAsset: "BNB" },
   { symbol: "SOL/BNB", baseAsset: "SOL", quoteAsset: "BNB" },
-  { symbol: "DOT/BNB", baseAsset: "DOT", quoteAsset: "BNB" },
-  { symbol: "LTC/BNB", baseAsset: "LTC", quoteAsset: "BNB" },
-  { symbol: "AVAX/BNB", baseAsset: "AVAX", quoteAsset: "BNB" },
-  { symbol: "LINK/BNB", baseAsset: "LINK", quoteAsset: "BNB" },
-  { symbol: "UNI/BNB", baseAsset: "UNI", quoteAsset: "BNB" },
-  { symbol: "ATOM/BNB", baseAsset: "ATOM", quoteAsset: "BNB" },
-  { symbol: "ETC/BNB", baseAsset: "ETC", quoteAsset: "BNB" },
-  { symbol: "FIL/BNB", baseAsset: "FIL", quoteAsset: "BNB" },
 ];
